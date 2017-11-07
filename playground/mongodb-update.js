@@ -8,9 +8,10 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => { // 2nd o
   }
   console.log('Connected to MongoDB server');
 
-// // findOneAndUpdate(filter, update, options, callback) Returns:
-// // Promise if no callback passed
+//////////////   findOneAndUpdate(filter, update, options, callback) Returns:    ///////////
+/////////////    Promise if no callback passed               //////////////
 // //we need to use Update Operators
+
 //   db.collection('Todos').findOneAndUpdate({
 //     _id: new ObjectID('5a01deb845b247378a12cd09')
 //   }, {
@@ -37,6 +38,5 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => { // 2nd o
   }).then ( (result) => {
     console.log(result.value);
   })
-
   // db.close();
 });
