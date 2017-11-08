@@ -1,6 +1,8 @@
 //server.js file is just responsible for our routes
 const express = require('express');
 const bodyParser = require('body-Parser');
+var _ = require('lodash');
+
 //we need body-parser to send json to the server. takes string body and converts it to js object
 
 var {mongoose} = require('./db/mongoose');
@@ -13,7 +15,7 @@ var app = express();
 app.use(bodyParser.json());//the return value from this json method is a function and that is the middleware we send to express
 
 
-//////////      ////  POST  ////     //////
+//////////      ////  POST  ////  todos   //////
 app.post('/todos', (req,res) => {
   //console.log(req.body); //where the body gets stored by body-Parser
   var todo = new Todo ({
@@ -25,6 +27,27 @@ app.post('/todos', (req,res) => {
     res.status(400).send(e.errors.text.message);
   });
 });
+
+////////////////// User POST /////////////////
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
+
+  // User.findByToken
+  // user.generateAuthToken //going to be responsible for adding a token to an id save it and send it back to user
+
+  user.save().then((user) => {
+    return user.generateAuthToken(); //we are returning it because we are expecting a chain promise
+    // res.send(user);
+  }).then((token)=> {
+    res.header('x-auth', token).send(user); //header(header name, value you want to set the header to), x-auth is a custom header because of jwt shema method
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
+
+
 
 ///////GET//////
 ////we want all the todos
