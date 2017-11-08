@@ -38,7 +38,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => { // 2nd o
     }
 
     // console.log(JSON.stringify(result.ops, undefined, 2)); //ops attribute is goign to store all of the docs that were inserted
-    console.log(result.ops[0]._id.getTimestamp());
+    console.log(result.ops[0]._id.getTimestamp());// this gets the created at timestamp
   });
 
 
