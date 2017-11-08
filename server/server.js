@@ -23,7 +23,7 @@ app.post('/todos', (req,res) => {
     res.send(doc);
   }, (e) => {
     res.status(400).send(e.errors.text.message);
-  })
+  });
 });
 
 ///////GET//////
@@ -33,8 +33,8 @@ app.get('/todos' , (req,res) => {
     res.send({todos}) //when passing back an array, create an object. it opens up to a more flexible future
   }, (e) => {
     res.status(400).send(e.errors.text.message);
-  })
-})
+  });
+});
 
 
 
