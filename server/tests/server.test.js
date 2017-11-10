@@ -1,28 +1,27 @@
-//mocha and nodemon don't need to be required
 const expect = require('expect');
 const request = require('supertest');
-
 const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
-
-const todos = [{
+const todos = [
+  {
   _id: new ObjectID(),
   text: 'First test todo'
-}, {
+  },
+  {
   _id: new ObjectID(),
-  text: 'Second test todo'
-}];
+  text: 'Second test todo',
+  completed: true,
+  completedAt: 333
+  }
+];
 
-//we have to make sure that the databse is empty
-beforeEach((done) => { //it is going to move to the test case once we call done
+beforeEach((done) => {
   Todo.remove({}).then(() => {
-    return Todo.insertMany(todos)
-  }). then( () => {
-    done();
-  }) // so our databse is going to empty before every request
+    return Todo.insertMany(todos);
+  }).then(() => done());
 });
 
 describe('POST /todos', () => {
@@ -31,27 +30,28 @@ describe('POST /todos', () => {
 
     request(app)
       .post('/todos')
-      .send({text:text})  // obj is going to converted to json because of supertest
-      .expect(200) //expect status to be 200
-      .expect((res) => { //custom expect calls do get passed in the respnse
+      .send({text})
+      .expect(200)
+      .expect((res) => {
         expect(res.body.text).toBe(text);
       })
       .end((err, res) => {
         if (err) {
-          return done(err); //return just stops the function execution and function down below dont get executed
+          return done(err);
         }
+
         Todo.find({text}).then((todos) => {
-          expect(todos.length).toBe(1); //this assumes if the todos database are empty
+          expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done();
-        }).catch((e) => done(e)); //this is the expression statement syntax instead of arrow function syntax
+        }).catch((e) => done(e));
       });
   });
 
   it('should not create todo with invalid body data', (done) => {
     request(app)
       .post('/todos')
-      .send({}) //this is the error
+      .send({})
       .expect(400)
       .end((err, res) => {
         if (err) {
@@ -79,26 +79,297 @@ describe('GET /todos', () => {
 });
 
 describe('GET /todos/:id', () => {
-  it('should return todo ', (done) => {
+  it('should return todo doc', (done) => {
     request(app)
-    .get(`/todos/${todos[0]._id.toHexString()}`) // we have to convert the ObjectID into a string we need toHexString
-    .expect(200)
-    .expect((res) => {
-      expect(res.body.todo.text).toBe(todos[0].text);
-    })
-    .end(done)
+      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(done);
   });
-  it('Should return 404 if todo not found', (done)=> {
+
+  it('should return 404 if todo not found', (done) => {
     var hexId = new ObjectID().toHexString();
+
     request(app)
-    .get(`/todos/${hexId}`)
-    .expect(404)
-    .end(done);
+      .get(`/todos/${hexId}`)
+      .expect(404)
+      .end(done);
   });
+
   it('should return 404 for non-object ids', (done) => {
     request(app)
       .get('/todos/123abc')
       .expect(404)
       .end(done);
-  })
-})
+  });
+});
+
+describe('DELETE /todos/:id', () => {
+  it('should remove a todo', (done) => {
+    var hexId = todos[1]._id.toHexString();
+
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo._id).toBe(hexId);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Todo.findById(hexId).then((todo) => {
+          expect(todo).toBeFalsy(); //from toNotExist in expect v1 now v21
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should return 404 if todo not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 if object id is invalid', (done) => {
+    request(app)
+      .delete('/todos/123abc')
+      .expect(404)
+      .end(done);
+  });
+});
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    var hexId = todos[0]._id.toHexString();
+    var text = 'This should be the new text';
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: true,
+        text
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(text);
+        expect(res.body.todo.completed).toBe(true);
+        //expect(res.body.todo.completedAt).toBeA('number');
+        expect(typeof res.body.todo.completedAt).toBe('number');
+      })
+      .end(done);
+  });
+
+  it('should clear completedAt when todo is not completed', (done) => {
+    var hexId = todos[1]._id.toHexString();
+    var text = 'This should be the new text!!';
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: false,
+        text
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(text);
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toBeFalsy();
+      })
+      .end(done);
+  });
+});
+
+// //mocha and nodemon don't need to be required
+// const expect = require('expect');
+// const request = require('supertest');
+//
+// const {ObjectID} = require('mongodb');
+//
+// const {app} = require('./../server');
+// const {Todo} = require('./../models/todo');
+//
+//
+// const todos = [{
+//   _id: new ObjectID(),
+//   text: 'First test todo'
+// }, {
+//   _id: new ObjectID(),
+//   text: 'Second test todo',
+//   completed: true,
+//   completedAt: 333
+// }];
+//
+// //we have to make sure that the databse is empty
+// beforeEach((done) => { //it is going to move to the test case once we call done
+//   Todo.remove({}).then(() => {
+//     return Todo.insertMany(todos)
+//   }). then( () => {
+//     done();
+//   }) // so our databse is going to empty before every request
+// });
+//
+// describe('POST /todos', () => {
+//   it('should create a new todo', (done) => {
+//     var text = 'Test todo text';
+//
+//     request(app)
+//       .post('/todos')
+//       .send({text:text})  // obj is going to converted to json because of supertest
+//       .expect(200) //expect status to be 200
+//       .expect((res) => { //custom expect calls do get passed in the respnse
+//         expect(res.body.text).toBe(text);
+//       })
+//       .end((err, res) => {
+//         if (err) {
+//           return done(err); //return just stops the function execution and function down below dont get executed
+//         }
+//         Todo.find({text}).then((todos) => {
+//           expect(todos.length).toBe(1); //this assumes if the todos database are empty
+//           expect(todos[0].text).toBe(text);
+//           done();
+//         }).catch((e) => done(e)); //this is the expression statement syntax instead of arrow function syntax
+//       });
+//   });
+//
+//   it('should not create todo with invalid body data', (done) => {
+//     request(app)
+//       .post('/todos')
+//       .send({}) //this is the error
+//       .expect(400)
+//       .end((err, res) => {
+//         if (err) {
+//           return done(err);
+//         }
+//
+//         Todo.find().then((todos) => {
+//           expect(todos.length).toBe(2);
+//           done();
+//         }).catch((e) => done(e));
+//       });
+//   });
+// });
+//
+// describe('GET /todos', () => {
+//   it('should get all todos', (done) => {
+//     request(app)
+//       .get('/todos')
+//       .expect(200)
+//       .expect((res) => {
+//         expect(res.body.todos.length).toBe(2);
+//       })
+//       .end(done);
+//   });
+// });
+//
+// describe('GET /todos/:id', () => {
+//   it('should return todo ', (done) => {
+//     request(app)
+//     .get(`/todos/${todos[0]._id.toHexString()}`) // we have to convert the ObjectID into a string we need toHexString
+//     .expect(200)
+//     .expect((res) => {
+//       expect(res.body.todo.text).toBe(todos[0].text);
+//     })
+//     .end(done)
+//   });
+//   it('Should return 404 if todo not found', (done)=> {
+//     var hexId = new ObjectID().toHexString();
+//     request(app)
+//     .get(`/todos/${hexId}`)
+//     .expect(404)
+//     .end(done);
+//   });
+//   it('should return 404 for non-object ids', (done) => {
+//     request(app)
+//       .get('/todos/123abc')
+//       .expect(404)
+//       .end(done);
+//   })
+// });
+//
+// describe('DELETE /todos/:id', () => {
+//   it('should remove a todo', (done) => {
+//     // var hexId = todos[1]._id.toHexString();
+//
+//     request(app)
+//       .delete(`/todos/${todos[0]._id.toHexString()}`)
+//       .expect(200)
+//       .expect((res) => {
+//         expect(res.body.todo._id).toBe(hexId);
+//       })
+//       .end((err, res) => {
+//         if (err) {
+//           return done(err);
+//         }
+//
+//         Todo.findById(hexId).then((todo) => {
+//           expect(todo).toNotExist();
+//           done();
+//         }).catch((e) => done(e));
+//       });
+//   });
+//
+//   it('should return 404 if todo not found', (done) => {
+//     var hexId = new ObjectID().toHexString();
+//
+//     request(app)
+//       .delete(`/todos/${hexId}`)
+//       .expect(404)
+//       .end(done);
+//   });
+//
+//   it('should return 404 if object id is invalid', (done) => {
+//     request(app)
+//       .delete('/todos/123abc')
+//       .expect(404)
+//       .end(done);
+//   });
+// });
+//
+
+//
+// describe('PATCH /todos/:id', () => {
+//   it('should update the todo', (done) => {
+//     var hexId = todos[0]._id.toHexString();
+//     var text = 'This should be the new text';
+//
+//     request(app)
+//       .patch(`/todos/${hexId}`)
+//       .send({
+//         completed: true,
+//         text
+//       })
+//       .expect(200)
+//       .expect((res) => {
+//         expect(res.body.todo.text).toBe(text);
+//         expect(res.body.todo.completed).toBe(true);
+//         expect(res.body.todo.completedAt).toBeA('number');
+//       })
+//       .end(done);
+//   });
+//
+//   it('should clear completedAt when todo is not completed', (done) => {
+//     var hexId = todos[1]._id.toHexString();
+//     var text = 'This should be the new text!!';
+//
+//     request(app)
+//       .patch(`/todos/${hexId}`)
+//       .send({
+//         completed: false,
+//         text
+//       })
+//       .expect(200)
+//       .expect((res) => {
+//         expect(res.body.todo.text).toBe(text);
+//         expect(res.body.todo.completed).toBe(false);
+//         expect(res.body.todo.completedAt).toNotExist();
+//       })
+//       .end(done);
+//   });
+// });
