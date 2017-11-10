@@ -12,6 +12,7 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var app = express();
+const port = process.env.PORT || 4000;
 
 //app.use to configure the middleware, if custom it will be a function, if 3rd party then access something of off the library
 app.use(bodyParser.json());//the return value from this json method is a function and that is the middleware we send to express
@@ -91,8 +92,8 @@ app.get('/todos/:id', (req, res) => {
 
 
 /////////\\\\\\\\ SERVER /////////////\\\\\\\\\\
-app.listen(4000, () => {
-  console.log('started on port 4000');
+app.listen(port, () => {
+  console.log(`started on port ${port}`);
 });
 
 module.exports = {app}; //we are now ready to load those two files in for testing
