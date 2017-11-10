@@ -1,6 +1,6 @@
 //server.js file is just responsible for our routes
 const express = require('express');
-const bodyParser = require('body-Parser');
+const bodyParser = require('body-parser');
 var _ = require('lodash');
 var {ObjectID} = require('mongodb');
 
