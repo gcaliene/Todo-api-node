@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-Parser');
 var _ = require('lodash');
-const {ObjectId} = require('mongodb');
+var {ObjectID} = require('mongodb');
 
 
 //we need body-parser to send json to the server. takes string body and converts it to js object
@@ -67,31 +67,27 @@ app.get('/todos' , (req,res) => {
 });
 
 ///''''''""""""""""""""""""" Get Todos by ID ''''''''''''
-app.get('/todos/:id', (req,res)=> {
-  let id = req.params.id;
-  if (!ObjectId.isValid(id)){
-    console.log('ID not valid');
-    res.status(404).send('<h1> 404 error</h1>')
+
+app.get('/todos/:id', (req, res) => {
+  console.log(req.params.id);
+  var id = req.params.id;
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
   }
+
   Todo.findById(id).then((todo) => {
     if (!todo) {
-       return console.log('user not found');
-      res.status(400).send('<h1>user not found</h1>')
+      return res.status(404).send();
     }
-    if (!todo.text) {
-      res.status(404).send();
-    }
-     res.status(200).send(`<h1> ${todo.text} </h1> `);
-  }, (e)=>{
-    console.log(e.message)
-  })
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
+
 
   // res.send(req.params); sending a get request will show you the inputteed id
-  console.log(req.params);
-})
-
-
-
 
 
 /////////\\\\\\\\ SERVER /////////////\\\\\\\\\\

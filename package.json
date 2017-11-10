@@ -8,8 +8,7 @@
   },
   "scripts": {
     "test": "mocha server/**/*.test.js",
-    "watch": "npm-watch",
-    "start": "node server/server.js"
+    "start": "nodemon server/server.js"
   },
   "author": "",
   "license": "ISC",
