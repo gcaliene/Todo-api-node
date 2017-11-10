@@ -2,6 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-Parser');
 var _ = require('lodash');
+const {ObjectId} = require('mongodb');
+
 
 //we need body-parser to send json to the server. takes string body and converts it to js object
 
@@ -13,6 +15,11 @@ var app = express();
 
 //app.use to configure the middleware, if custom it will be a function, if 3rd party then access something of off the library
 app.use(bodyParser.json());//the return value from this json method is a function and that is the middleware we send to express
+
+
+
+
+
 
 
 //////////      ////  POST  ////  todos   //////
@@ -49,7 +56,7 @@ app.post('/users', (req, res) => {
 
 
 
-///////GET//////
+///////\\\\\//////////\\\\\\\\\\\\\\GET//////\\\\\\\\\\\\\\\\\///////////
 ////we want all the todos
 app.get('/todos' , (req,res) => {
   Todo.find().then((todos) => {
@@ -59,8 +66,35 @@ app.get('/todos' , (req,res) => {
   });
 });
 
+///''''''""""""""""""""""""" Get Todos by ID ''''''''''''
+app.get('/todos/:id', (req,res)=> {
+  let id = req.params.id;
+  if (!ObjectId.isValid(id)){
+    console.log('ID not valid');
+    res.status(404).send('<h1> 404 error</h1>')
+  }
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+       return console.log('user not found');
+      res.status(400).send('<h1>user not found</h1>')
+    }
+    if (!todo.text) {
+      res.status(404).send();
+    }
+     res.status(200).send(`<h1> ${todo.text} </h1> `);
+  }, (e)=>{
+    console.log(e.message)
+  })
+
+  // res.send(req.params); sending a get request will show you the inputteed id
+  console.log(req.params);
+})
 
 
+
+
+
+/////////\\\\\\\\ SERVER /////////////\\\\\\\\\\
 app.listen(4000, () => {
   console.log('started on port 4000');
 });
