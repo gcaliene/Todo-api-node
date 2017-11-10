@@ -36,7 +36,7 @@ UserSchema.methods.toJSON = function () {
   var user = this;
   var userObject = user.toObject(); //takes mongoose variable "user" and convert to a regular object where only the properties available on the doc exist
   return _.pick(userObject, ['_id', 'email']); //thus leaving things off like the password and token from being displayed
-};
+}; //the header x-auth is still being passed on in the header and
 
 
 //line reight below is an object that you acn add any method you like, an instance method
