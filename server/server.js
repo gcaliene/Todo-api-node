@@ -1,8 +1,8 @@
 //server.js file is just responsible for our routes
 const express = require('express');
 const bodyParser = require('body-parser');
-var _ = require('lodash');
-var {ObjectID} = require('mongodb');
+const _ = require('lodash');
+const {ObjectID} = require('mongodb');
 
 
 //we need body-parser to send json to the server. takes string body and converts it to js object
@@ -103,18 +103,18 @@ app.delete('/todos/:id', (req, res) => {
       return res.status(404).send();
     }
 
-    res.send({todo});
+    res.send({todo}); //remember to send an object ya dummy
   }).catch((e) => {
     res.status(400).send();
   });
 });
 
 
-//////////////\\\\\\\\\\\\ PUT ///////////\\\\\\\\\\\\\\
+//////////////\\\\\\\\\\\\ PATCH ///////////\\\\\\\\\\\\\\
 
 app.patch('/todos/:id', (req, res) => {
   var id = req.params.id;
-  var body = _.pick(req.body, ['text', 'completed']);
+  var body = _.pick(req.body, ['text', 'completed']); //this is the reason for ladash, the req.body is where the updaates are stored
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
@@ -131,7 +131,7 @@ app.patch('/todos/:id', (req, res) => {
     if (!todo) {
       return res.status(404).send();
     }
-
+    //if todo exist, then it can get sent back
     res.send({todo});
   }).catch((e) => {
     res.status(400).send();
@@ -152,4 +152,4 @@ app.listen(port, () => {
   console.log(`started on port ${port}`);
 });
 
-module.exports = {app}; //we are now ready to load those two files in for testing
+module.exports = {app}; //export now ready to load those 4 files in for testing

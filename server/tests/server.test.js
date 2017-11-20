@@ -18,6 +18,8 @@ const todos = [
   }
 ];
 
+//toExist is now toBeTruthy
+
 beforeEach((done) => {
   Todo.remove({}).then(() => {
     return Todo.insertMany(todos);
