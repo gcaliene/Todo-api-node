@@ -3,9 +3,13 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-//we can't add on to user but we can add custom methods to UserSchema
+//we can't add on to mongoose.model user but we can add custom methods to UserSchema
 var UserSchema = new mongoose.Schema({
-  email: {type: String, minlength:1, trim: true, required:true,
+  email: {
+    type: String,
+    minlength:1,
+    trim: true,
+    required:true,
     unique: true, //won't pass in if there is another email
     validate: {
       validator: (value) => {
@@ -40,7 +44,7 @@ UserSchema.methods.toJSON = function () {
 
 
 //line reight below is an object that you acn add any method you like, an instance method
-UserSchema.methods.generateAuthToken = function() {
+UserSchema.methods.generateAuthToken = function() { //we use function because of the need for this
   var user = this;
   var access = 'auth';
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
