@@ -1,3 +1,4 @@
+require('./config/config');
 //server.js file is just responsible for our routes
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -12,7 +13,7 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT;
 
 //app.use to configure the middleware, if custom it will be a function, if 3rd party then access something of off the library
 app.use(bodyParser.json());//the return value from this json method is a function and that is the middleware we send to express
@@ -149,7 +150,7 @@ app.patch('/todos/:id', (req, res) => {
 
 /////////\\\\\\\\ SERVER /////////////\\\\\\\\\\
 app.listen(port, () => {
-  console.log(`started on port ${port}`);
+  console.log(`Started on port ${port} & the Mongo DB is: ${process.env.MONGODB_URI}`);
 });
 
 module.exports = {app}; //export now ready to load those 4 files in for testing
