@@ -11,17 +11,13 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
 const port = process.env.PORT;
 
 //app.use to configure the middleware, if custom it will be a function, if 3rd party then access something of off the library
 app.use(bodyParser.json());//the return value from this json method is a function and that is the middleware we send to express
-
-
-
-
-
 
 
 //////////      ////  POST  ////  todos   //////
@@ -48,7 +44,7 @@ app.post('/users', (req, res) => {
   user.save().then((user) => {
     return user.generateAuthToken(); //we are returning it because we are expecting a chain promise
     // res.send(user);
-  }).then((token)=> {
+  }).then((token)=> {//res.header lets us set a header while req.header allows us to see that header
     res.header('x-auth', token).send(user); //header(header name, value you want to set the header to), x-auth is a custom header because of jwt shema method
   }).catch((e) => {
     res.status(400).send(e);
@@ -59,6 +55,23 @@ app.post('/users', (req, res) => {
 
 
 ///////\\\\\//////////\\\\\\\\\\\\\\GET//////\\\\\\\\\\\\\\\\\///////////
+///////////////USER GET TODOS////////\\\\\\\\.
+
+app.get('/users/me', authenticate, (req,res) => {
+  res.send(req.user);
+  // var token = req.header('x-auth'); //x-auth is the key to get the value
+  //
+  // User.findByToken(token).then((user) => {
+  //   if (!user) {
+  //     return Promise.reject(); //goes down to the catch
+  //   }
+  //   res.send(user);
+  // }).catch((e)=>{
+  //   res.status(401).send();
+  // });
+});
+
+
 ////we want all the todos
 app.get('/todos' , (req,res) => {
   Todo.find().then((todos) => {
@@ -87,6 +100,7 @@ app.get('/todos/:id', (req, res) => {
     res.status(400).send();
   });
 });
+
 
 
   // res.send(req.params); sending a get request will show you the inputteed id

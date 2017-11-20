@@ -36,7 +36,7 @@ var UserSchema = new mongoose.Schema({
 });
 
 //we are goign to use a method to determin what exactly gets sent back when a mongoose model is converted to json value
-UserSchema.methods.toJSON = function () {
+UserSchema.methods.toJSON = function () { //this is overriding the toJSON method
   var user = this;
   var userObject = user.toObject(); //takes mongoose variable "user" and convert to a regular object where only the properties available on the doc exist
   return _.pick(userObject, ['_id', 'email']); //thus leaving things off like the password and token from being displayed
@@ -53,6 +53,25 @@ UserSchema.methods.generateAuthToken = function() { //we use function because of
   return user.save().then(()=> {
     return token;
   }); /// here we save the changes
+}
+
+//statics is an object kindof like methods although anything you add on to it becomes a model (User) method as opposed to an instance method (user)
+UserSchema.statics.findByToken = function(token) {
+  var User = this;
+  var decoded;
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e){
+    return new Promise((resolve, reject)=> { //or you can put // return Promise.reject();//
+      reject(); //the catch call back will be called
+    })
+  }
+  return User.findOne({
+    "_id": decoded._id,
+    "tokens.token": token, //quotes are required when there are dots in the value.
+    "tokens.access": 'auth'
+  })
 }
 
 var User = mongoose.model('User', UserSchema);
