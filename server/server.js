@@ -33,14 +33,12 @@ app.post('/todos', (req,res) => {
   });
 });
 
-////////////////// User POST /////////////////
+////////////////// User POST ////////register/////////
 app.post('/users', (req, res) => {
   var body = _.pick(req.body, ['email', 'password']);
   var user = new User(body);
-
   // User.findByToken
   // user.generateAuthToken //going to be responsible for adding a token to an id save it and send it back to user
-
   user.save().then((user) => {
     return user.generateAuthToken(); //we are returning it because we are expecting a chain promise
     // res.send(user);
@@ -51,6 +49,7 @@ app.post('/users', (req, res) => {
   })
 });
 
+///////////////USER LOGIN //////////////
 app.post('/users/login', (req,res)=>{
   let body = _.pick(req.body, ['email', 'password']);
 
@@ -60,6 +59,17 @@ app.post('/users/login', (req,res)=>{
       res.header('x-auth', token).send(user);
     });
   }).catch((e)=> {
+    res.status(400).send();
+  });
+});
+
+
+
+/////////\\\\\\\\\\\\\\////USER DELETE //////////\\\\\\\\\\\////////\\\\\\\\\\\
+app.delete('/users/me/token', authenticate, (req, res)=> {
+  req.user.removeToken(req.token).then(()=> {
+    res.status(200).send();
+  }, ()=> {
     res.status(400).send();
   });
 });
@@ -81,6 +91,8 @@ app.get('/users/me', authenticate, (req,res) => {
   //   res.status(401).send();
   // });
 });
+
+
 
 
 ////we want all the todos
@@ -134,6 +146,7 @@ app.delete('/todos/:id', (req, res) => {
     res.status(400).send();
   });
 });
+
 
 
 //////////////\\\\\\\\\\\\ PATCH ///////////\\\\\\\\\\\\\\

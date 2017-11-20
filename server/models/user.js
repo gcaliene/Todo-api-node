@@ -54,7 +54,19 @@ UserSchema.methods.generateAuthToken = function() { //we use function because of
   return user.save().then(()=> {
     return token;
   }); /// here we save the changes
+};
+
+UserSchema.methods.removeToken = function (token) {
+  var user = this;
+  return user.update({ //return lets us chain together our call we set up in server.js
+    $pull: {
+      tokens: {
+        token:token
+      }
+    }
+  })
 }
+
 
 //statics is an object kindof like methods although anything you add on to it becomes a model (User) method as opposed to an instance method (user)
 UserSchema.statics.findByToken = function(token) {
