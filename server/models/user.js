@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 //we can't add on to mongoose.model user but we can add custom methods to UserSchema
 var UserSchema = new mongoose.Schema({
@@ -72,7 +73,21 @@ UserSchema.statics.findByToken = function(token) {
     "tokens.token": token, //quotes are required when there are dots in the value.
     "tokens.access": 'auth'
   })
-}
+};
+
+UserSchema.pre('save', function(next) {
+  let user = this;
+  if(user.isModified('password')) {
+    bcrypt.genSalt(10, (err, salt)=> {//10 is the round and could take longer so that no one can bruteforce quickly as this takes a while
+      bcrypt.hash(user.password, salt, (err, hash)=> { //we dont want to store the password, we want to store the hash
+        user.password = hash; //the user.password was just equall to the plain text password, this is overriding that
+        next();
+      })
+    })
+  }else{
+    next();
+  }
+});
 
 var User = mongoose.model('User', UserSchema);
 

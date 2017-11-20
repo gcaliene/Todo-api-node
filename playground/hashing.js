@@ -1,16 +1,29 @@
 const {SHA256} = require('crypto-js');
 const jwt = require('jsonwebtoken');
+const bcrypt =require('bcryptjs');
 
 
-var data = {
-  id: 10
-}
+var password ='123abc!';
+// bcrypt.genSalt(10, (err, salt)=> {//10 is the round and could take longer so that no one can bruteforce quickly as this takes a while
+//   bcrypt.hash(password, salt, (err, hash)=> { //we dont want to store the password, we want to store the hash
+//     console.log( hash);
+//   })
+// })
+//
+var hashedPassword = '$2a$10$qeSwAkdIn1OkTkasH1oLm.dEiktwq3BBDP6Xh0MCZnPLN3YF90Qhm';
+bcrypt.compare("123", hashedPassword, (err,res)=> { //changing it to 123 will result in false
+  console.log(res);
+})
 
-//token is the value we send to the user when they sign up/login
-var token = jwt.sign(data, '123abc') // takes the object and creates the token
-console.log(token);
-var decoded = jwt.verify(token, '123abc'); //take that token and secret and it makes sure that dat awas not manipulated
-console.log("decoded", decoded);
+// var data = {
+//   id: 10
+// }
+//
+// //token is the value we send to the user when they sign up/login
+// var token = jwt.sign(data, '123abc') // takes the object and creates the token
+// console.log(token);
+// var decoded = jwt.verify(token, '123abc'); //take that token and secret and it makes sure that dat awas not manipulated
+// console.log("decoded", decoded);
 
 //we get 2 functions, 1 to create token and one to verify token
 
