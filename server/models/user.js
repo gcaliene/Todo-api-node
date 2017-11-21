@@ -48,7 +48,7 @@ UserSchema.methods.toJSON = function () { //this is overriding the toJSON method
 UserSchema.methods.generateAuthToken = function() { //we use function because of the need for this
   var user = this;
   var access = 'auth';
-  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+  var token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString();
 
   user.tokens.push ({access, token}); //rememberthat tokens is an empty array
   return user.save().then(()=> {
@@ -74,7 +74,7 @@ UserSchema.statics.findByToken = function(token) {
   var decoded;
 
   try {
-    decoded = jwt.verify(token, 'abc123');
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (e){
     return new Promise((resolve, reject)=> { //or you can put // return Promise.reject();//
       reject(); //the catch call back will be called
